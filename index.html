@@ -2,40 +2,20 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Telugu Speech to English Translator</title>
+<title>Telugu Speech to English</title>
 
 <style>
-body{
-  font-family:Arial;
-  background:#f4f6f9;
-  padding:30px;
-}
+body{font-family:Arial;background:#f4f6f9;padding:30px}
 .container{
   max-width:900px;
   margin:auto;
   background:#fff;
   padding:25px;
   border-radius:10px;
-  box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
-h2{text-align:center}
-button{
-  padding:10px 18px;
-  margin:5px;
-  font-size:14px;
-  cursor:pointer;
-}
-textarea{
-  width:100%;
-  height:120px;
-  margin-top:8px;
-  font-size:15px;
-  padding:10px;
-}
-.status{
-  font-weight:bold;
-  margin-top:10px;
-}
+button{padding:10px 18px;margin:5px;font-size:14px}
+textarea{width:100%;height:120px;margin-top:10px;font-size:15px}
+.status{font-weight:bold;margin-top:10px}
 .green{color:green}
 .red{color:red}
 </style>
@@ -44,39 +24,28 @@ textarea{
 <body>
 
 <div class="container">
-    <h2>Process to Convert Telugu Speech to English</h2>
-    <ul>
-        <li>Record Telugu speech using Start Button</li>
-        <li>Stop recording using Stop Button</li>
-        <li>Use Translate Button to translate Telugu text to English</li>
-        <li>Speak the English button will help to speak the text generated translation</li>
-    </ul>
-<!-- Controls -->
+<h2>🎤 Telugu Speech → English (Automatic)</h2>
+
 <button onclick="startSpeech()">Start</button>
 <button onclick="stopSpeech()">Stop</button>
-<button onclick="translateText()">Translate</button>
-<button onclick="speakEnglish()">🔊 Speak English</button>
 <button onclick="clearAll()">Clear</button>
 
 <div class="status" id="status">Status: <span class="red">Stopped</span></div>
 
-<!-- Telugu -->
 <h3>Telugu Text</h3>
 <button onclick="copyText('teluguText')">Copy Telugu</button>
-<textarea id="teluguText" placeholder="Telugu speech text will appear here..."></textarea>
+<textarea id="teluguText"></textarea>
 
-<!-- English -->
 <h3>English Text</h3>
 <button onclick="copyText('englishText')">Copy English</button>
-<textarea id="englishText" placeholder="English translation will appear here..."></textarea>
-
+<textarea id="englishText"></textarea>
 </div>
 
 <script>
 let recognition;
 let fullText = "";
 
-/* ---------- SPEECH ---------- */
+/* -------- START SPEECH -------- */
 function startSpeech(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR){
@@ -107,21 +76,19 @@ function startSpeech(){
   recognition.start();
 }
 
+/* -------- STOP & AUTO TRANSLATE -------- */
 function stopSpeech(){
   if(recognition) recognition.stop();
+
+  if(fullText.trim()){
+    autoTranslate(fullText);
+  }
 }
 
-/* ---------- TRANSLATION (FIXED) ---------- */
-function translateText(){
-  const text = document.getElementById("teluguText").value.trim();
-  if(!text){
-    alert("No Telugu text to translate");
-    return;
-  }
-
+/* -------- AUTO TRANSLATION -------- */
+function autoTranslate(text){
   document.getElementById("englishText").value = "Translating...";
 
-  /* Primary: LibreTranslate */
   fetch("https://libretranslate.de/translate",{
     method:"POST",
     headers:{
@@ -140,20 +107,16 @@ function translateText(){
     if(d.translatedText){
       document.getElementById("englishText").value = d.translatedText;
     } else {
-      fallbackTranslate(text);
+      fallback(text);
     }
   })
-  .catch(()=>{
-    fallbackTranslate(text);
-  });
+  .catch(()=>fallback(text));
 }
 
-/* ---------- FALLBACK API ---------- */
-function fallbackTranslate(text){
-  fetch(
-    "https://api.mymemory.translated.net/get?q="
-    + encodeURIComponent(text) + "&langpair=te|en"
-  )
+/* -------- FALLBACK -------- */
+function fallback(text){
+  fetch("https://api.mymemory.translated.net/get?q="
+    + encodeURIComponent(text) + "&langpair=te|en")
   .then(r=>r.json())
   .then(d=>{
     document.getElementById("englishText").value =
@@ -165,18 +128,7 @@ function fallbackTranslate(text){
   });
 }
 
-/* ---------- TEXT TO SPEECH ---------- */
-function speakEnglish(){
-  const text = document.getElementById("englishText").value;
-  if(!text) return;
-
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "en-US";
-  utter.rate = 1;
-  window.speechSynthesis.speak(utter);
-}
-
-/* ---------- UTILITIES ---------- */
+/* -------- UTILITIES -------- */
 function copyText(id){
   const el = document.getElementById(id);
   el.select();
@@ -185,9 +137,9 @@ function copyText(id){
 }
 
 function clearAll(){
-  fullText = "";
-  document.getElementById("teluguText").value = "";
-  document.getElementById("englishText").value = "";
+  fullText="";
+  document.getElementById("teluguText").value="";
+  document.getElementById("englishText").value="";
 }
 </script>
 
